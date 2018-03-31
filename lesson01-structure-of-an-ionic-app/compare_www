@@ -1,10 +1,8 @@
 #!/bin/bash
 
-
 DIR_TEMP=$HOME/tmp
-DIR_APP1=app01_blank
-DIR_APP2=app02_secondpage
-DIR_APP3=app03_lazyload
+DIR_APP1="${1:-app01_blank}"
+DIR_APP2="${2:-app02_with_secondpage}"
 
 #(cd $DIR_APP1; rm -rf www; ionic build)
 #(cd $DIR_APP2; rm -rf www; ionic build)
@@ -14,8 +12,11 @@ DIR_APP3=app03_lazyload
 #
 #-------------------------------------------------------------------------------
 DEBUGLEVEL=0
-function debug()
-{
+function print() {
+	printf "%s\n" "$1"
+}
+
+function debug() {
 	LEVEL="$1"; shift
 	LINE="$*"
 
@@ -27,8 +28,7 @@ function debug()
 #-------------------------------------------------------------------------------
 #
 #-------------------------------------------------------------------------------
-function prepeare_for_diff()
-{
+function prepeare_for_diff() {
 	SRC="$1"
 	DST="$2"
 
@@ -39,43 +39,42 @@ function prepeare_for_diff()
 	sed '1,$s#/\*.*\*/#@@#g'	>"${DST}"
 }
 
+#-------------------------------------------------------------------------------
+TMP_SRC="$DIR_TEMP/src"
+TMP_DST="$DIR_TEMP/dst"
 
 #-------------------------------------------------------------------------------
-#
-#-------------------------------------------------------------------------------
-TMP1="$DIR_TEMP/src"
-TMP2="$DIR_TEMP/dst"
+print "compare $DIR_APP1 with $DIR_APP2"
 
-#-------------------------------------------------------------------------------
-#
-#-------------------------------------------------------------------------------
-debug 4 "collect all files"
-(cd app01_blank && find www -type f) | while read FILE
+find "$DIR_APP1/www" "$DIR_APP2/www" -type f | cut -d/ -f2- | sort| uniq | while read FILE
 do
-	debug 2 "check file"
+	debug 2 "check file $FILE"
 	EXT="${FILE##*.}"
 
 	debug 3 "check file extention"
-	if [[ "|map|jpg|png|ttf|ico|svg|woff|woff2|" =~ "|$EXT|" ]]; then
+	if [[ "|map|jpg|png|ttf|ico|svg|woff|woff2|eot|" =~ "|$EXT|" ]]; then
 		debug 4 "ignore $EXT files"
 		:  Ignore
 	else 
-		prepeare_for_diff "$DIR_APP1/$FILE" "$TMP1"
-		prepeare_for_diff "$DIR_APP2/$FILE" "$TMP2"
-
-		debug 3 "calculate diff"
-		DIFF="$(diff -BEw $TMP1 $TMP2)"
-		RC=$?
-
-		if [[ $RC = 0 ]]; then
-			:
+		STATUS="OK"
+		[ -f "$DIR_APP1/$FILE" ] && STATUS="no file for $DIR_APP1"
+		[ -f "$DIR_APP2/$FILE" ] && STATUS="no file for $DIR_APP2"
+		
+		if [[ "$STATUS" == "OK" ]]; then
+			printf "%-4s: %-20s %s\n" $RC "$STATUS" "$FILE"
 		else
-			printf "%-4s: %s\n" $RC "$FILE"
+			prepeare_for_diff "$DIR_APP1/$FILE" "$TMP_SRC"
+			prepeare_for_diff "$DIR_APP2/$FILE" "$TMP_DST"
 
-			echo "diff -BEw $TMP1 $TMP2"
-			diff -BEw $TMP1 $TMP2
+			DIFF="$(diff -BEw $TMP_SRC $TMP_DST)"
+			RC=$?
 
-			exit
+			if [[ $RC = 0 ]]; then
+				:
+			else
+				printf "%-4s: %-20s %s\n" $RC "$STATUS" "$FILE"
+				diff -BEw $TMP_SRC $TMP_DST
+			fi
 		fi
 	fi
 done
