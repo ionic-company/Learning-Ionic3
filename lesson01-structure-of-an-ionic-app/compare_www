@@ -1,0 +1,81 @@
+#!/bin/bash
+
+
+DIR_TEMP=$HOME/tmp
+DIR_APP1=app01_blank
+DIR_APP2=app02_secondpage
+DIR_APP3=app03_lazyload
+
+#(cd $DIR_APP1; rm -rf www; ionic build)
+#(cd $DIR_APP2; rm -rf www; ionic build)
+#(cd $DIR_APP3; rm -rf www; ionic build)
+
+#-------------------------------------------------------------------------------
+#
+#-------------------------------------------------------------------------------
+DEBUGLEVEL=0
+function debug()
+{
+	LEVEL="$1"; shift
+	LINE="$*"
+
+	if [[ $LEVEL -le $DEBUGLEVEL ]]; then
+		echo "DBG | $*"
+	fi
+}
+
+#-------------------------------------------------------------------------------
+#
+#-------------------------------------------------------------------------------
+function prepeare_for_diff()
+{
+	SRC="$1"
+	DST="$2"
+
+	debug 4 "prepare $SRC"
+
+	js-beautify "${SRC}"		|\
+	grep -v "^\s*//.*" 		|\
+	sed '1,$s#/\*.*\*/#@@#g'	>"${DST}"
+}
+
+
+#-------------------------------------------------------------------------------
+#
+#-------------------------------------------------------------------------------
+TMP1="$DIR_TEMP/src"
+TMP2="$DIR_TEMP/dst"
+
+#-------------------------------------------------------------------------------
+#
+#-------------------------------------------------------------------------------
+debug 4 "collect all files"
+(cd app01_blank && find www -type f) | while read FILE
+do
+	debug 2 "check file"
+	EXT="${FILE##*.}"
+
+	debug 3 "check file extention"
+	if [[ "|map|jpg|png|ttf|ico|svg|woff|woff2|" =~ "|$EXT|" ]]; then
+		debug 4 "ignore $EXT files"
+		:  Ignore
+	else 
+		prepeare_for_diff "$DIR_APP1/$FILE" "$TMP1"
+		prepeare_for_diff "$DIR_APP2/$FILE" "$TMP2"
+
+		debug 3 "calculate diff"
+		DIFF="$(diff -BEw $TMP1 $TMP2)"
+		RC=$?
+
+		if [[ $RC = 0 ]]; then
+			:
+		else
+			printf "%-4s: %s\n" $RC "$FILE"
+
+			echo "diff -BEw $TMP1 $TMP2"
+			diff -BEw $TMP1 $TMP2
+
+			exit
+		fi
+	fi
+done
