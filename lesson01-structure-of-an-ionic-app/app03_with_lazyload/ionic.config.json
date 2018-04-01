@@ -1,5 +1,5 @@
 {
-  "name": "app03_with_lazyload",
+  "name": "app03_lazyload",
   "app_id": "",
   "type": "ionic-angular",
   "integrations": {}

@@ -6,8 +6,9 @@ import { NavController } from 'ionic-angular';
 	templateUrl: 'home.html'
 })
 export class HomePage {
-	public lesson = "1.2"
-	public title = "App with lazy load"
+  public lesson = "1.3"
+	public title = "Home"
+	public text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
 
 	constructor(public navCtrl: NavController) {
 
