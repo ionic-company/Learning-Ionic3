@@ -1,0 +1,31 @@
+<ion-header>
+    <ion-navbar>
+      <button ion-button menuToggle>
+        <ion-icon name="menu"></ion-icon>
+      </button>
+      <ion-title>Country Details</ion-title>
+    </ion-navbar>
+  </ion-header>
+  
+  
+  <ion-content class="card-background-page">
+
+      <ion-card>
+        <img class="backg" src="{{selectedItem.flag}}"/>
+        <div class="card-title">{{selectedItem.name}}</div>
+        <div class="card-subtitle">
+            <ion-list>
+                <ion-avatar ion-item text-center class="item-md">
+                    <img class="logo" src="{{selectedItem.flag}}">
+                  </ion-avatar>
+          
+                  <ion-label class="paddingzero" text-center>Capital: {{selectedItem.capital}}</ion-label>
+                  <ion-label class="paddingzero" text-center>Population: {{value}}</ion-label>
+                  <ion-label class="paddingzero" text-center>Native Name: {{selectedItem.nativeName}}</ion-label>
+              </ion-list>
+        </div>
+      </ion-card>
+      <!-- <div #map id="map"></div> -->
+      <div id="map1"></div>
+    
+    </ion-content>
