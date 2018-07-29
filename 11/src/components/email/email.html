@@ -1,0 +1,4 @@
+<ion-item class="email-outer">
+  <ion-label stacked>Email</ion-label>
+  <ion-input  [style.color]="getStyle()" #emailBox [(ngModel)]="email" type="email" (change)="checkEmail()"></ion-input>
+</ion-item>
